@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        html, body {
+            margin: 0px;
+            width: 100%;
+            height: 100%;
+            padding: 0px;
+        }
+
+        @font-face {
+            font-family: 'comic sans ms';
+            font-style: normal;
+            font-weight: 400;
+            src: url("comic_sans_ms.woff2"),
+            url("comic_sans_ms.woff");
+        url("comic_sans_ms.ttf");
+        }
+
+        div, p {
+            font-family: 'comic sans ms';
+        }
+    </style>
+</head>
+<body>
+<div id="div" style="background-color:#444444;width: 100%;height:100%;position: relative;">
+    <div style="color:#ffffff;">safari下用window.innerHeight 获取舞台高度</div>
+    <div style="color:aqua">IOS 并不支持 ttf 字体,可以使用woff字体</div>
+</div>
+</body>
+<!--禁止页面滚动-->
+<script>
+    ///
+    document.body.scrollTop = '0px';
+    setdivscale();
+    window.addEventListener('touchstart', function (event) {
+        ///滚动到顶部
+        document.body.scrollTop = '0px';
+        //阻止滚动事件
+        event.preventDefault();
+    })
+    /*
+     * 要侦听页面尺寸的变化  （旋转）
+     * */
+    window.onresize = function () {
+        ////////旋转后应该将页面滚动到 0， 0 的位置
+        document.body.scrollTop = '0px';
+        setdivscale();
+    }
+    //test 设置div的尺寸
+    function setdivscale() {
+        var div = document.getElementById('div');
+        div.style.width = document.body.clientWidth + 'px';
+        div.style.height = window.innerHeight + "px";
+    }
+</script>
+</html>
