@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>bezier.edit</title>
+    <style>
+        body {
+            margin: 10px;
+            width: 100%;
+            height: 100%;
+            background:url("crossed_stripes.png");
+            background-repeat: repeat;
+        }
+
+        input {
+            background: #303030;
+            border: #535353 solid 1px;
+            border-radius: 5px;
+            color: #ffffff;
+            font-size: 18px;
+            width: 50px;
+        }
+
+        small {
+            color: #ffffff;
+        }
+
+        button {
+            height: 28px;
+            width: 160px;
+            background: #525252;
+            border: #333333 solid 1px;
+            border-radius: 5px;
+            color: #ffffff;
+            font-size: 12px;
+            padding: 8px;
+            text-align: center;
+
+        }
+
+        button:hover {
+            background: #3d3d3d;
+        }
+
+        #upload {
+            font-size: 12px;
+            padding: 4.5px;
+            width: 150px;
+        }
+
+        #buttoncontainer {
+
+            border-radius: 5px;
+            border: #303030 solid 2px;
+            padding: 10px;
+            /*
+                        z-index: 1;
+            */
+        }
+
+        .minititle {
+            color: #ffffff;
+            font-size: 12px;
+        }
+
+        .lines {
+            width: 160px;
+            background: #303030;
+            height: 2px;
+            margin: 5px auto 5px auto;
+        }
+
+        #container {
+            /*
+                        z-index: -1;
+            */
+            padding-right: 30px;
+        }
+
+        #trace_div {
+
+            text-align: center;
+            width: 80%;
+            height: 60%;
+            position: absolute;
+            padding-bottom: 0;
+            margin-top: 20%;
+            margin-left: 10%;
+            display: none;
+        }
+
+        #source {
+            width: 80%;
+            height: 60%;
+            background: #525252;
+            border: #0e0e0e solid 1px;
+            border-radius: 5px;
+            color: #ffffff;
+            font-size: 12px;
+            padding: 8px;
+        }
+
+        #close_btn {
+            background-repeat: no-repeat;
+            background-image: url("close.png");
+            height: 45px;
+            width: 45px;
+            position: absolute;
+            margin-left: 89%;
+            margin-top: -2%;
+        }
+
+
+    </style>
+</head>
+<body>
+<div id="trace_div">
+    <div id="close_btn"></div>
+    <textarea id="source"></textarea></div>
+<div id="container" style="position: absolute;"></div>
+<div id="buttoncontainer" style=" width: 160px;">
+    <small>Stage:</small>
+    <input id="widthinput" type="number">
+    <input id="heightinput" type="number">
+    <br/>
+    <button id="reload">重载</button>
+    <div class="lines"></div>
+    <small>当前锚点数量:</small>
+    <input id="pointnum" type="number" style="width: 60px" value="10">
+    <button id="pushpoint">添加两个锚点</button>
+    <div class="lines"></div>
+    <p class="minititle">设置绘制精度(1-20):</p>
+    <input id="precisioninput" type="number" style="width: 80px" value="10">
+    <button id="precision" style="width: 60px;float: right">确定</button>
+    <div class="lines"></div>
+    <p class="minititle">设置背景图像:</p>
+    <input id="upload" type="file" value="上传图片">
+
+    <div class="lines"></div>
+    <p class="minititle">绘制节点计算</p>
+    <button id="trace_node">输出节点数组</button>
+    <button id="trace_node_json">输出JSON格式文本</button>
+    <div class="lines"></div>
+    <p class="minititle">轨迹计算</p>
+    <input id="speed" type="number" style="width: 90px" placeholder="设置速度">
+    <button id="setspeed" style="width: 60px;float:right;">确定</button>
+    <button id="trace_speed">输出轨迹数组</button>
+    <button id="trace_speed_json">输出JSON格式文本</button>
+    <div class="lines"></div>
+    <button id="arrowMoves">模拟运动</button>
+
+
+</div>
+
+
+</body>
+<script src="upload_image.js"></script>
+<script src="phaser.js"></script>
+<script src="src/uiView.js"></script>
+<script src="src/Main.js"></script>
+</html>
