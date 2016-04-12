@@ -6,203 +6,232 @@
 var phaserframe = {
 
 
-    //Math
+        //Math
 
-    math: {
-        //求距
-        dist: function (point1, point2) {
-            var dx = point1.x - point2.x;
-            var dy = point1.y - point2.y;
-            return Math.sqrt(dx * dx + dy * dy);
+        math: {
+            //求距
+            dist: function (point1, point2) {
+                var dx = point1.x - point2.x;
+                var dy = point1.y - point2.y;
+                return Math.sqrt(dx * dx + dy * dy);
+            },
+
+            /*
+             * 计算两个点：B相对于A的角度
+             * */
+            relativeRadians: function (pointA, pointB) {
+                var dx = pointA.x - pointB.x;
+                var dy = pointA.y - pointB.y;
+                var radians = Math.atan2(dy, dx);//弧度
+                return this.radiansToRotate(radians);
+
+            },
+
+            //弧度转换角度
+            radiansToRotate: function (ra) {
+                return ra * 180 / Math.PI;
+            },
+
+            /*
+             * 角速度
+             * 匀速非常规运动
+             * */
+            rotateSpeed: function (endPoint,
+                                   startPoint,
+                                   speed) {
+                //
+                var angle = Math.atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x);
+                return {vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed};
+            }
         },
-
-        /*
-         * 计算两个点：B相对于A的角度
+        /**
+         * set canvas center
          * */
-        relativeRadians: function (pointA, pointB) {
-            var dx = pointA.x - pointB.x;
-            var dy = pointA.y - pointB.y;
-            var radians = Math.atan2(dy, dx);//弧度
-            return this.radiansToRotate(radians);
+        game: null,
 
+        setCanvasAlign: function (divId) {
+            var div = document.getElementById(divId);
+            var canvas = document.getElementsByTagName('canvas')[0] || document.getElementsByTagNameNS('canvas')[0];
+            var scale = getCanvasScale(canvas);
+            var stageScale = this.getWindowScale();
+            var self = this;
+            setInterval(function () {
+                var _s1 = getCanvasScale(canvas);
+                var _s2 = self.getWindowScale();
+                div.style.marginLeft = '0';
+                div.style.marginTop = '0';
+                if ((_s1.w == _s2.w || _s1.h == _s2.h)) {
+                    var left = ( _s2.w - _s1.w) / 2 + 'px';
+                    if (div.style.marginLeft && div.style.marginLeft != left) div.style.marginLeft = left;
+                    var tops = ( _s2.h - _s1.h) / 2 + 'px';
+                    if (div.style.marginTop && div.style.marginTop != tops)div.style.marginTop = tops;
+                    scale = _s1;
+                    stageScale = _s2;
+                }
+            }, 1000 / 5);
+
+            function getCanvasScale(_canvas) {
+                return {
+                    w: Number(_canvas.style.width.substr(0, _canvas.style.width.length - 2)) || 0,
+                    h: Number(_canvas.style.height.substr(0, _canvas.style.height.length - 2)) || 0
+                }
+            }
         },
 
-        //弧度转换角度
-        radiansToRotate: function (ra) {
-            return ra * 180 / Math.PI;
-        },
-
-        /*
-         * 角速度
-         * 匀速非常规运动
+        /**
+         * window scale
          * */
-        rotateSpeed: function (endPoint,
-                               startPoint,
-                               speed) {
-            //
-            var angle = Math.atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x);
-            return {vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed};
-        }
-    },
-    /**
-     * set canvas center
-     * */
-    game: null,
 
-    setCanvasAlign: function (divId) {
-        var div = document.getElementById(divId);
-        var canvas = document.getElementsByTagName('canvas')[0] || document.getElementsByTagNameNS('canvas')[0];
-        var scale = getCanvasScale(canvas);
-        var stageScale = this.getWindowScale();
-        var self = this;
-        setInterval(function () {
-            var _s1 = getCanvasScale(canvas);
-            var _s2 = self.getWindowScale();
-            div.style.marginLeft = '0';
-            div.style.marginTop = '0';
-            if ((_s1.w == _s2.w || _s1.h == _s2.h)) {
-                var left = ( _s2.w - _s1.w) / 2 + 'px';
-                if (div.style.marginLeft && div.style.marginLeft != left) div.style.marginLeft = left;
-                var tops = ( _s2.h - _s1.h) / 2 + 'px';
-                if (div.style.marginTop && div.style.marginTop != tops)div.style.marginTop = tops;
-                scale = _s1;
-                stageScale = _s2;
+        getWindowScale: function () {
+            return {w: document.body.clientWidth, h: window.innerHeight}
+        },
+
+        /**
+         *Display rotated to tips(level or vertical)
+         * */
+        showTips: function (islevel) {
+            if (!document.getElementById('game_rotated_tips')) {
+                var _w = document.body.clientWidth;
+                var _h = window.innerHeight;
+                var img = document.createElement('img');
+                img.src = islevel ? phaserTools.base_img.rotate_level_tips : phaserTools.base_img.rotate_vertical_tips;
+                img.id = 'game_rotated_tips';
+                img.style.position = 'absolute';
+                img.style.zIndex = '999998';
+                img.style.left = (_w - img.width) / 2 + 'px';
+                img.style.top = (_h - img.height) / 2 + 'px';
+                var _background = document.createElement('div');
+                _background.style.backgroundColor = '#ffffff';
+                _background.style.position = 'absolute';
+                _background.style.width = _w + 'px';
+                _background.style.height = _h + 'px';
+                _background.style.zIndex = '999990';
+                _background.style.left = '0px';
+                _background.style.top = '0px';
+                document.body.appendChild(_background);
+                document.body.appendChild(img);
+                var t = setInterval(function () {
+                    if (document.body.clientWidth > window.innerHeight && islevel) {
+                        document.body.removeChild(img);
+                        document.body.removeChild(_background);
+                        clearInterval(t)
+                    }
+                    else if (document.body.clientWidth < window.innerHeight && !islevel) {
+                        document.body.removeChild(img);
+                        document.body.removeChild(_background);
+                        clearInterval(t)
+                    }
+
+                }, 1000 / 10)
             }
-        }, 1000 / 5);
+        },
 
-        function getCanvasScale(_canvas) {
-            return {
-                w: Number(_canvas.style.width.substr(0, _canvas.style.width.length - 2)) || 0,
-                h: Number(_canvas.style.height.substr(0, _canvas.style.height.length - 2)) || 0
-            }
-        }
-    },
+        /***
+         *  load resource config file
+         * */
+        loadResourceConfig: function (cb, game) {
+            var _game = game ? game : this.game;
 
-    /**
-     * window scale
-     * */
-
-    getWindowScale: function () {
-        return {w: document.body.clientWidth, h: window.innerHeight}
-    },
-
-    /**
-     *Display rotated to tips(level or vertical)
-     * */
-    showTips: function (islevel) {
-        if (!document.getElementById('game_rotated_tips')) {
-            var _w = document.body.clientWidth;
-            var _h = window.innerHeight;
-            var img = document.createElement('img');
-            img.src = islevel ? phaserTools.base_img.rotate_level_tips : phaserTools.base_img.rotate_vertical_tips;
-            img.id = 'game_rotated_tips';
-            img.style.position = 'absolute';
-            img.style.zIndex = '999998';
-            img.style.left = (_w - img.width) / 2 + 'px';
-            img.style.top = (_h - img.height) / 2 + 'px';
-            var _background = document.createElement('div');
-            _background.style.backgroundColor = '#ffffff';
-            _background.style.position = 'absolute';
-            _background.style.width = _w + 'px';
-            _background.style.height = _h + 'px';
-            _background.style.zIndex = '999990';
-            _background.style.left = '0px';
-            _background.style.top = '0px';
-            document.body.appendChild(_background);
-            document.body.appendChild(img);
-            var t = setInterval(function () {
-                if (document.body.clientWidth > window.innerHeight && islevel) {
-                    document.body.removeChild(img);
-                    document.body.removeChild(_background);
-                    clearInterval(t)
+            _game.load.onFileComplete.addOnce(function () {
+                //_game.load.onFileComplete.removeAll();
+                var res = _game.cache.getJSON('res');
+                //重写资源格式
+                var group = res['groups'];
+                var resource = res['resources'];
+                var res_object = {};
+                //格式化资源对象
+                for (var r = 0; r < resource.length; r++) {
+                    res_object[resource[r]['name']] = resource[r];
                 }
-                else if (document.body.clientWidth < window.innerHeight && !islevel) {
-                    document.body.removeChild(img);
-                    document.body.removeChild(_background);
-                    clearInterval(t)
+                //创建组索引
+                for (var i = 0; i < group.length; i++) {
+                    var current_grouplist = group[i]['keys'].split(',');
+                    var current_object = phaserframe.res[group[i]['name']] = [];
+                    for (var j = 0; j < current_grouplist.length; j++) {
+                        current_object.push(res_object[current_grouplist[j]]);
+                    }
                 }
+                if (cb)cb(phaserframe.res)
 
-            }, 1000 / 10)
-        }
-    },
-
-    /***
-     *  load resource config file
-     * */
-    loadResourceConfig: function (cb, game) {
-        var _game = game ? game : this.game;
-
-        _game.load.onFileComplete.addOnce(function () {
-            //_game.load.onFileComplete.removeAll();
-            var res = _game.cache.getJSON('res');
-            //重写资源格式
-            var group = res['groups'];
-            var resource = res['resources'];
-            var res_object = {};
-            //格式化资源对象
-            for (var r = 0; r < resource.length; r++) {
-                res_object[resource[r]['name']] = resource[r];
-            }
-            //创建组索引
-            for (var i = 0; i < group.length; i++) {
-                var current_grouplist = group[i]['keys'].split(',');
-                var current_object = phaserframe.res[group[i]['name']] = [];
-                for (var j = 0; j < current_grouplist.length; j++) {
-                    current_object.push(res_object[current_grouplist[j]]);
-                }
-            }
-            if (cb)cb(phaserframe.res)
-
-        }, this);
-        _game.load.json('res', this.resource_href, false);
-        _game.load.start();
-    },
-    /***
-     *  加载资源文件
-     *  { 文件列表 | 加载过程中回调 | 加载完成回调 }
-     *
-     *  {
+            }, this);
+            _game.load.json('res', this.resource_href, false);
+            _game.load.start();
+        },
+        /***
+         *  加载资源文件
+         *  { 文件列表 | 加载过程中回调 | 加载完成回调 }
+         *
+         *  {
      *      文件列表:
      *      [
      *          {name:'xxx',type:'json/image,url:'tttttt'}
      *          ]
      *      }
-     * */
-    resload: function (list, complete_cb, progress_cb, game) {
-        var _game = game ? game : this.game;
-        var self = this;
-        if (progress_cb)this.game.load.onFileComplete.add(progress_cb, this);
-        this.game.load.onLoadComplete.addOnce(function () {
-            if (complete_cb)complete_cb();
-        }, this);
+         * */
+        resload: function (list, complete_cb, progress_cb, game) {
+            var _game = game ? game : this.game;
+            var self = this;
+            if (progress_cb)this.game.load.onFileComplete.add(progress_cb, this);
+            this.game.load.onLoadComplete.addOnce(function () {
+                this.game.load.onLoadComplete.removeAll();
+                this.game.load.onFileComplete.removeAll();
+                if (complete_cb) {
+                    complete_cb();
+                    complete_cb = null;
+                }
+            }, this);
 
-        for (var i = 0; i < list.length; i++) {
-            var _type = list[i]['type'];
-            if (_type == 'sound')_type = 'audio';
-            if (_type != 'bin') {
-                _game.load[_type](list[i]['name'], 'resource/' + list[i].url, false);
-            } else {
-                //动画资源表
-                var data = list[i].name.split('-')[1].split('x');
-                _game.load.spritesheet(list[i]['name'], 'resource/' + list[i].url, Number(data[0]), Number(data[1]), Number(data[2]));
+            for (var i = 0; i < list.length; i++) {
+                var _type = list[i]['type'];
+                if (_type == 'sound')_type = 'audio';
+                if (_type != 'bin') {
+                    _game.load[_type](list[i]['name'], 'resource/' + list[i].url, true);
+                } else {
+                    //动画资源表
+                    var data = list[i].name.split('-')[1].split('x');
+                    _game.load.spritesheet(list[i]['name'], 'resource/' + list[i].url, Number(data[0]), Number(data[1]), Number(data[2]));
 
+                }
             }
+            //_game.load.start();
+
+        },
+        /**
+         * 单程加载图片文件
+         * */
+        loadImg: function (image, width, height, src, game) {
+            var _game = game ? game : this.game;
+            var key = src.split('/');
+            key = key[key.length - 1].split('.')[0] + '_avatar';
+            function requiestImg(_img, _w, _h, _src) {
+                var ImageElement = new Image();
+                ImageElement.onload = function () {
+                    var texture = PIXI.Texture.fromImage(_src, false, 0);
+                    texture.crop.width = ImageElement.width;
+                    texture.crop.height = ImageElement.height;
+                    if (_img) {
+                        _img.loadTexture(texture);
+                        _img.scale = {x: _w / ImageElement.width, y: _h / ImageElement.height};
+                    }
+                }
+                ImageElement.src = _src;
+            }
+
+            new requiestImg(image, width, height, src);
+
+        },
+        /**
+         * 读取配置文件列表
+         * */
+        getAssetsGroup: function (_groupName) {
+
+            if (!phaserframe.res || !phaserframe.res.hasOwnProperty(_groupName)) {
+                return [];
+            }
+            return phaserframe.res[_groupName];
         }
-        //_game.load.start();
-
-    },
-    /**
-     * 读取配置文件列表
-     * */
-    getAssetsGroup: function (_groupName) {
-
-        if (!phaserframe.res || !phaserframe.res.hasOwnProperty(_groupName)) {
-            return [];
-        }
-        return phaserframe.res[_groupName];
-
     }
-};
+    ;
 
 phaserframe.resource_href = 'resource/resource.json';
 
